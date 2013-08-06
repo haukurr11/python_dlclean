@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import re
 import os
 import shutil
@@ -12,6 +13,10 @@ target: target directory
 search: name of tv show
 """
 def dlclean(source,target,search):
+    try:
+        os.mkdir(target)
+    except:
+        pass
     filenames = [ name for name in os.listdir(source)
                   if os.path.isfile(os.path.join(source, name))
                   and search.lower() in name.replace('.', ' ').lower()]
@@ -21,7 +26,7 @@ def dlclean(source,target,search):
         dlclean(source + "/" + d,target,search)
     for filename in filenames:
         try:
-            regEx = re.search("s(\d\d)e(\d\d)", filename)
+            regEx = re.search("s(\d\d)e(\d\d)", filename, re.IGNORECASE)
             season = int(regEx.group(1))
             targetPath = target+"/"+search
             fullPath = targetPath+"/"+"Season "+str(season)
@@ -34,14 +39,16 @@ def dlclean(source,target,search):
             except OSError:
                 pass
             sour = source+"/"+filename
-            print(fullPath)
             shutil.copyfile(sour, fullPath+"/"+filename)
         except AttributeError:
             continue
 
 def main():
-   dlclean(sys.argv[1],sys.argv[2],sys.argv[3])
-
+    if len(sys.argv) < 3:
+      print("Need at least 3 arguments")
+    for line in open('shows.txt','r').readlines():
+        dlclean(sys.argv[1],sys.argv[2],line.strip())
+    print("Done!")
 
 if __name__ == '__main__':
     main()
